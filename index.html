@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>播客采访策划助手</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #222;
+padding: 24px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #444; }
+  textarea, input[type="password"] {
+    width: 100%; border: 1px solid #ddd; border-radius: 8px;
+    padding: 12px; font-size: 14px; font-family: inherit;
+    background: #fff; resize: vertical; outline: none;
+    transition: border-color 0.2s;
+  }
+  textarea:focus, input[type="password"]:focus { border-color: #555; }
+  input[type="password"] { resize: none; }
+  .field { margin-bottom: 16px; }
+  .hint { font-size: 12px; color: #999; margin-top: 4px; }
+  button {
+    width: 100%; padding: 14px; background: #111; color: #fff;
+    border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s; margin-top: 4px;
+  }
+  button:hover { background: #333; }
+  button:disabled { background: #999; cursor: not-allowed; }
+  .output-section { margin-top: 32px; }
+  .output-block {
+    background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+    padding: 20px; margin-bottom: 16px;
+  }
+  .output-block h2 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #111; }
+  .output-content {
+    font-size: 14px; line-height: 1.8; color: #333;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .copy-btn {
+    width: auto; padding: 6px 14px; font-size: 12px; font-weight: 500;
+    background: #f0f0f0; color: #333; border-radius: 6px; margin-top: 12px;
+  }
+  .copy-btn:hover { background: #e0e0e0; }
+  .error { color: #c0392b; font-size: 13px; margin-top: 8px; }
+  .spinner {
+    display: inline-block; width: 18px; height: 18px;
+    border: 2px solid #ccc; border-top-color: #333;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>播客采访策划助手</h1>
+  <p class="subtitle">输入基本信息，一键生成采访问题、开场结束语</p>
+
+  <div class="field">
+    <label>背景信息</label>
+    <textarea id="userInput" rows="8" placeholder="请填写以下内容：
+
+我是谁：（你的身份、节目名称、风格）
+我要采访谁：（嘉宾姓名、背景、领域）
+听众是谁：（目标听众画像）
+听众听完后我希望他们有什么收获和产生什么行动："></textarea>
+  </div>
+
+  <button id="generateBtn" onclick="generate()">生成采访策划</button>
+  <div id="error" class="error"></div>
+
+  <div id="outputSection" class="output-section" style="display:none">
+    <div class="output-block">
+      <h2>🎙️  采访问题库</h2>
+      <div class="output-content" id="out1"></div>
+      <button class="copy-btn" onclick="copy('out1', this)">复制</button>
+    </div>
+    <div class="output-block">
+      <h2>📢 开场白 & 结束语</h2>
+      <div class="output-content" id="out2"></div>
+      <button class="copy-btn" onclick="copy('out2', this)">复制</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `你是一位经验丰富的播客采访策划顾问。
+
+【核心原则：代入受众视角】
+设计问题时完全代入目标受众——他们关注什么、想挖掘什么、希望从这期节目得到什么。
+
+【好问题要能挖出的内容】
+故事三要素（缺一不可）：动机（为什么做）、困境（遇到什么难关）、成长（经历了什么转变）
+好观点标准：反常识、有行业洞察、触及人性、有理有据让人信服
+
+【语气要求】
+所有输出都要口语化、说人话，像真人用嘴说出来的，不要书面语、不要AI腔、不要双引号强调、不要排比句式。问题尤其要自然，因为是要当面开口问的。
+
+【格式要求】
+- 直接输出内容，不要加多余说明
+- 两个部分之间用 "---SPLIT---" 分隔
+- 不要输出部分标题`;
+
+const USER_PROMPT_TEMPLATE = (input) => `根据以下信息，生成播客采访策划：
+
+${input}
+
+请按顺序输出以下两个部分，用 ---SPLIT--- 分隔：
+
+第一部分：采访问题库
+先判断这期内容的核心诉求（带货种草 / 讲故事 / 传授知识 / 行业洞察等），再据此设计3个深度板块，每板块7个问题。
+板块名称和逻辑要匹配诉求，例如：
+- 带货诉求 → 嘉宾是谁 / 能给用户提供什么 / 为什么选他
+- 故事诉求 → 起点与动机 / 困境与转折 / 成长与收获
+- 知识诉求 → 认知框架 / 实战经验 / 对听众的启发
+问题要有趣、有反差感，能挖出真实故事和深度观点。每个问题一行加序号，板块之间加板块标题。
+
+第二部分：开场白 + 结束语
+开场白像导游引导听众，核心是让他们明白为什么要听、能得到什么：
+① 打招呼
+② 1-2句介绍本档播客
+③ 1-2句介绍嘉宾（目的是抓住注意力）
+④ 1-2句介绍本期主题和邀请嘉宾的原因
+⑤ 明确告诉听众听完这期会得到什么
+
+结束语：传递积极正能量和鼓励，包含明确CTA（订阅、分享、关注等）`;
+
+async function generate() {
+  const apiKey = 'sk-s32x3JETsnsisEWG3e01Ee94B7Ba464fB7E830Fc41Ea2899';
+  const userInput = document.getElementById('userInput').value.trim();
+  const errorEl = document.getElementById('error');
+  const btn = document.getElementById('generateBtn');
+
+  errorEl.textContent = '';
+
+  if (!userInput) { errorEl.textContent = '请填写背景信息'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>生成中...';
+  document.getElementById('outputSection').style.display = 'none';
+
+  try {
+    const res = await fetch('https://new.pumpkinai.vip/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: SYSTEM_PROMPT + '\n\n' + USER_PROMPT_TEMPLATE(userInput) }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.content[0].text;
+    const parts = text.split('---SPLIT---').map(s => s.trim());
+
+    document.getElementById('out1').textContent = parts[0] || '';
+    document.getElementById('out2').textContent = parts[1] || '';
+    document.getElementById('outputSection').style.display = 'block';
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+
+  } catch (e) {
+    errorEl.textContent = '出错了：' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '生成采访策划';
+  }
+}
+
+function copy(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '已复制 ✓';
+    setTimeout(() => btn.textContent = '复制', 1500);
+  });
+}
+</script>
+</body>
+</html>
