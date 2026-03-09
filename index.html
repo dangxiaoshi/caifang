@@ -3,82 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>播客采访策划助手</title>
+<title>PodFlow · 开麦前</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #222;
-padding: 24px; }
-  .container { max-width: 800px; margin: 0 auto; }
-  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-  .subtitle { color: #666; font-size: 14px; margin-bottom: 24px; }
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #444; }
-  textarea, input[type="password"] {
-    width: 100%; border: 1px solid #ddd; border-radius: 8px;
-    padding: 12px; font-size: 14px; font-family: inherit;
-    background: #fff; resize: vertical; outline: none;
-    transition: border-color 0.2s;
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+    background: #fafafa; color: #1d1d1f;
+    padding: 0; min-height: 100vh;
   }
-  textarea:focus, input[type="password"]:focus { border-color: #555; }
-  input[type="password"] { resize: none; }
-  .field { margin-bottom: 16px; }
-  .hint { font-size: 12px; color: #999; margin-top: 4px; }
-  button {
-    width: 100%; padding: 14px; background: #111; color: #fff;
-    border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: background 0.2s; margin-top: 4px;
+  .header {
+    text-align: center; padding: 48px 24px 20px;
   }
-  button:hover { background: #333; }
-  button:disabled { background: #999; cursor: not-allowed; }
-  .output-section { margin-top: 32px; }
-  .output-block {
-    background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
-    padding: 20px; margin-bottom: 16px;
+  .logo {
+    width: 120px; height: 120px; border-radius: 0;
+    margin-bottom: 20px;
   }
-  .output-block h2 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: #111; }
+  .brand-name {
+    font-size: 14px; font-weight: 500; color: #86868b;
+    letter-spacing: 1px; margin-bottom: 24px;
+  }
+  .step-tag {
+    display: inline-block; padding: 6px 16px;
+    background: #FFF8EC; border-radius: 20px;
+    font-size: 13px; font-weight: 600; color: #F5A623;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.5px;
+    color: #1d1d1f; margin-bottom: 6px;
+  }
+  .header h1 span { color: #1d1d1f; }
+  .header .subtitle {
+    font-size: 16px; color: #86868b; font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+  .main { max-width: 680px; margin: 0 auto; padding: 0 24px 48px; }
+  .card {
+    background: #fff; border-radius: 16px;
+    padding: 28px; margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .card-label {
+    font-size: 13px; font-weight: 600; color: #86868b;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 14px;
+  }
+  textarea {
+    width: 100%; border: none; background: transparent;
+    font-size: 15px; line-height: 1.7; font-family: inherit;
+    color: #1d1d1f; resize: vertical; outline: none;
+    min-height: 180px;
+  }
+  textarea::placeholder { color: #c7c7cc; }
+  .btn-primary {
+    width: 100%; padding: 16px; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    background: #F5A623; color: #fff;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(245,166,35,0.3);
+  }
+  .btn-primary:hover { background: #e6991a; box-shadow: 0 4px 12px rgba(245,166,35,0.4); }
+  .btn-primary:disabled { background: #d2d2d7; box-shadow: none; cursor: not-allowed; }
+  .error { color: #ff3b30; font-size: 13px; margin-top: 10px; text-align: center; }
+  .output-section { margin-top: 12px; }
+  .output-card {
+    background: #fff; border-radius: 16px;
+    padding: 28px; margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .output-label {
+    font-size: 13px; font-weight: 600; color: #F5A623;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 16px;
+  }
   .output-content {
-    font-size: 14px; line-height: 1.8; color: #333;
+    font-size: 15px; line-height: 1.8; color: #1d1d1f;
     white-space: pre-wrap; word-break: break-word;
   }
-  .copy-btn {
-    width: auto; padding: 6px 14px; font-size: 12px; font-weight: 500;
-    background: #f0f0f0; color: #333; border-radius: 6px; margin-top: 12px;
+  .btn-copy {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 20px; border: 1px solid #e5e5ea; border-radius: 10px;
+    font-size: 14px; font-weight: 500; color: #1d1d1f;
+    background: #fff; cursor: pointer; margin-top: 20px;
+    transition: all 0.2s ease; width: auto;
   }
-  .copy-btn:hover { background: #e0e0e0; }
-  .error { color: #c0392b; font-size: 13px; margin-top: 8px; }
+  .btn-copy:hover { background: #f5f5f7; border-color: #F5A623; color: #F5A623; }
   .spinner {
     display: inline-block; width: 18px; height: 18px;
-    border: 2px solid #ccc; border-top-color: #333;
+    border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
     border-radius: 50%; animation: spin 0.7s linear infinite;
     vertical-align: middle; margin-right: 8px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .footer {
+    text-align: center; padding: 24px;
+    font-size: 12px; color: #c7c7cc;
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>播客采访策划助手</h1>
-  <p class="subtitle">输入基本信息，一键生成采访问题、开场结束语</p>
 
-  <div class="field">
-    <label>背景信息</label>
-    <textarea id="userInput" rows="8" placeholder="请填写以下内容：
+<div class="header">
+  <div class="step-tag">Step 1</div>
+  <h1>开麦前</h1>
+  <p class="subtitle">好问题，才能问出好节目</p>
+</div>
 
-我是谁：（你的身份、节目名称、风格）
-我要采访谁：（嘉宾姓名、背景、领域）
-听众是谁：（目标听众画像）
-听众听完后我希望他们有什么收获和产生什么行动："></textarea>
+<div class="main">
+  <div class="card">
+    <div class="card-label">简单介绍一下这期节目</div>
+    <textarea id="userInput" rows="8" placeholder="你是谁：比如「我是小美，做一档聊成长的播客」
+聊什么：比如「想聊聊从大厂裸辞去摆摊的经历」
+谁来聊：比如「嘉宾是我朋友阿杰，摆摊半年月入3万」（自己聊可以不填）
+谁在听：比如「想转行、想搞副业的年轻人」
+听完之后希望他们：比如「有勇气迈出第一步」"></textarea>
   </div>
 
-  <button id="generateBtn" onclick="generate()">生成采访策划</button>
+  <button class="btn-primary" id="generateBtn" onclick="generate()">生成提纲</button>
   <div id="error" class="error"></div>
 
   <div id="outputSection" class="output-section" style="display:none">
-    <div class="output-block">
+    <div class="output-card">
+      <div class="output-label">你的采访提纲</div>
       <div class="output-content" id="outputAll"></div>
-      <button class="copy-btn" onclick="copyAll(this)">复制全部内容</button>
+      <button class="btn-copy" onclick="copyAll(this)">📋 一键复制</button>
     </div>
   </div>
 </div>
+
+<div class="footer">PodFlow · AI驱动的播客全流程助手</div>
 
 <script>
 const SYSTEM_PROMPT = `你是一位经验丰富的播客采访策划顾问。
@@ -95,16 +148,23 @@ const SYSTEM_PROMPT = `你是一位经验丰富的播客采访策划顾问。
 
 【格式要求】
 - 直接输出内容，不要加多余说明
-- 两个部分之间用 "---SPLIT---" 分隔
+- 三个部分之间用 "---SPLIT---" 分隔
 - 不要输出部分标题`;
 
 const USER_PROMPT_TEMPLATE = (input) => `根据以下信息，生成播客采访策划：
 
 ${input}
 
-请按顺序输出以下两个部分，用 ---SPLIT--- 分隔：
+请按顺序输出以下三个部分，用 ---SPLIT--- 分隔：
 
-第一部分：采访问题库
+第一部分：节目概览
+用简洁的方式列出这期节目的骨架信息，格式如下：
+本期主题：（根据用户输入提炼一句话主题）
+播客主：（从用户输入中提取）
+嘉宾：（从用户输入中提取嘉宾姓名和一句话背景介绍，如果是单口播客则写"本期为单口"）
+核心看点：（提炼2-3个最吸引听众的悬念或亮点，用问句形式）
+
+第二部分：采访问题库
 先判断这期内容的核心诉求（带货种草 / 讲故事 / 传授知识 / 行业洞察等），再据此设计3个深度板块，每板块7个问题。
 板块名称和逻辑要匹配诉求，例如：
 - 带货诉求 → 嘉宾是谁 / 能给用户提供什么 / 为什么选他
@@ -112,8 +172,8 @@ ${input}
 - 知识诉求 → 认知框架 / 实战经验 / 对听众的启发
 问题要有趣、有反差感，能挖出真实故事和深度观点。每个问题一行加序号，板块之间加板块标题。
 
-第二部分：开场白 + 结束语
-开场白像导游引导听众，核心是让他们明白为什么要听、能得到什么：
+第三部分：开场白 + 结束语
+开场白的第一句话必须是一个钩子——抛出一个反常识的结论、一个让人好奇的悬念、或一个引发共鸣的问题，目的是让听众在前10秒就被抓住。然后再进入：
 ① 打招呼
 ② 1-2句介绍本档播客
 ③ 1-2句介绍嘉宾（目的是抓住注意力）
@@ -130,10 +190,10 @@ async function generate() {
 
   errorEl.textContent = '';
 
-  if (!userInput) { errorEl.textContent = '请填写背景信息'; return; }
+  if (!userInput) { errorEl.textContent = '请先介绍一下这期节目'; return; }
 
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>生成中...';
+  btn.innerHTML = '<span class="spinner"></span>正在生成...';
   document.getElementById('outputSection').style.display = 'none';
 
   try {
@@ -161,7 +221,7 @@ async function generate() {
     const text = data.content[0].text;
     const parts = text.split('---SPLIT---').map(s => s.trim());
 
-    document.getElementById('outputAll').textContent = parts[0] + '\n\n————————————————————————\n\n' + (parts[1] || '');
+    document.getElementById('outputAll').textContent = (parts[0] || '') + '\n\n————————————————————————\n\n' + (parts[1] || '') + '\n\n————————————————————————\n\n' + (parts[2] || '');
     document.getElementById('outputSection').style.display = 'block';
     document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
 
@@ -169,15 +229,15 @@ async function generate() {
     errorEl.textContent = '出错了：' + e.message;
   } finally {
     btn.disabled = false;
-    btn.textContent = '生成采访策划';
+    btn.textContent = '生成提纲';
   }
 }
 
 function copyAll(btn) {
   const text = document.getElementById('outputAll').textContent;
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '已复制 ✓';
-    setTimeout(() => btn.textContent = '复制全部内容', 1500);
+    btn.innerHTML = '✅ 已复制';
+    setTimeout(() => btn.innerHTML = '📋 一键复制', 1500);
   });
 }
 </script>
