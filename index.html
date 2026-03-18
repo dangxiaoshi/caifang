@@ -183,10 +183,12 @@ ${input}
 结束语：传递积极正能量和鼓励，包含明确CTA（订阅、分享、关注等）`;
 
 async function generate() {
-  const apiKey = 'sk-s32x3JETsnsisEWG3e01Ee94B7Ba464fB7E830Fc41Ea2899';
+  const apiKey = 'sk-a68be30d00994d60bcac5c9bc2a6b063';
   const userInput = document.getElementById('userInput').value.trim();
   const errorEl = document.getElementById('error');
   const btn = document.getElementById('generateBtn');
+  const outputEl = document.getElementById('outputAll');
+  const outputSection = document.getElementById('outputSection');
 
   errorEl.textContent = '';
 
@@ -194,21 +196,25 @@ async function generate() {
 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>正在生成...';
-  document.getElementById('outputSection').style.display = 'none';
+  outputEl.textContent = '';
+  outputSection.style.display = 'block';
+  outputSection.scrollIntoView({ behavior: 'smooth' });
 
   try {
-    const res = await fetch('https://new.pumpkinai.vip/v1/messages', {
+    const res = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'qwen-turbo',
         max_tokens: 2048,
-        messages: [{ role: 'user', content: SYSTEM_PROMPT + '\n\n' + USER_PROMPT_TEMPLATE(userInput) }]
+        stream: true,
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: USER_PROMPT_TEMPLATE(userInput) }
+        ]
       })
     });
 
@@ -217,16 +223,42 @@ async function generate() {
       throw new Error(err.error?.message || `HTTP ${res.status}`);
     }
 
-    const data = await res.json();
-    const text = data.content[0].text;
-    const parts = text.split('---SPLIT---').map(s => s.trim());
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
 
-    document.getElementById('outputAll').textContent = (parts[0] || '') + '\n\n————————————————————————\n\n' + (parts[1] || '') + '\n\n————————————————————————\n\n' + (parts[2] || '');
-    document.getElementById('outputSection').style.display = 'block';
-    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const json = JSON.parse(data);
+          const delta = json.choices?.[0]?.delta?.content || '';
+          if (delta) {
+            fullText += delta;
+            const parts = fullText.split('---SPLIT---').map(s => s.trim());
+            if (parts.length >= 3) {
+              outputEl.textContent = parts[0] + '\n\n————————————————————————\n\n' + parts[1] + '\n\n————————————————————————\n\n' + parts[2];
+            } else if (parts.length === 2) {
+              outputEl.textContent = parts[0] + '\n\n————————————————————————\n\n' + parts[1];
+            } else {
+              outputEl.textContent = fullText;
+            }
+          }
+        } catch {}
+      }
+    }
 
   } catch (e) {
     errorEl.textContent = '出错了：' + e.message;
+    outputSection.style.display = 'none';
   } finally {
     btn.disabled = false;
     btn.textContent = '生成提纲';
