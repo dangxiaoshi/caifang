@@ -183,7 +183,7 @@ ${input}
 结束语：传递积极正能量和鼓励，包含明确CTA（订阅、分享、关注等）`;
 
 async function generate() {
-  const apiKey = 'sk-808c7e7547224685a7d79573a4ec35da';
+  const API_URL = 'https://chuanjiabao.vip/ai/';
   const userInput = document.getElementById('userInput').value.trim();
   const errorEl = document.getElementById('error');
   const btn = document.getElementById('generateBtn');
@@ -201,11 +201,10 @@ async function generate() {
   outputSection.scrollIntoView({ behavior: 'smooth' });
 
   try {
-    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: 'deepseek-chat',
